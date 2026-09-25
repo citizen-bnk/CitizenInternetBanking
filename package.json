@@ -1,0 +1,26 @@
+{
+  "name": "citizen-internet-banking",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Citizen Bank internet banking — AI-first web banking with a classic dashboard. Talks to Citizen Bank Core.",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "next": "^15.5.26",
+    "react": "^19.1.9",
+    "react-dom": "^19.1.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.3"
+  }
+}
