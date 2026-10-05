@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import AuthHero from "@/components/AuthHero";
 
+import AccessButtons from "@/components/AccessButtons";
+
 function LoginForm() {
   const params = useSearchParams();
   const [email, setEmail] = useState("");
@@ -28,7 +30,9 @@ function LoginForm() {
 
   return (
     <form className="box" onSubmit={submit} noValidate>
-      <h2>Sign in</h2>
+      <h2>Welcome to Citizen Bank</h2>
+      <AccessButtons />
+      <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
       <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Welcome back to Citizen Bank internet banking.</p>
       {params.get("reason") === "timeout" && <div className="alert info">You were signed out after a period of inactivity.</div>}
       {error && <div className="alert err" role="alert">{error}</div>}
@@ -41,6 +45,7 @@ function LoginForm() {
           <p>Demo profile: <button type="button" className="link" onClick={() => setEmail("palesa@demo.citizenbank.co.ls")}>palesa@demo.citizenbank.co.ls</button> — ask your administrator for the demo password.</p>
         </div>
       )}
+    </details>
     </form>
   );
 }

@@ -9,10 +9,12 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#07051a" };
 
+import AccessPanel from "@/components/AccessPanel";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>{children}<AccessPanel /></body>
     </html>
   );
 }
