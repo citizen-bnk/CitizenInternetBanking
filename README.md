@@ -23,6 +23,24 @@ AI-first web banking for Citizen Bank, designed from the *Internet Banking and M
 
 ## Local development
 
+On Windows PowerShell, run against the existing demo backend:
+
+```powershell
+npm ci
+$env:CORE_API_URL = 'https://citizenbankcore.vercel.app'
+npm run dev
+```
+
+Citizen AI displays replies and reads them aloud for both typed and spoken requests. Use the speaker
+button to mute or enable spoken replies. The speaking animation lasts until audio completes; a new
+request interrupts the old reply. ElevenLabs is used when Core is configured, with browser speech as fallback.
+Browser voice availability varies by device and language.
+
+`npm test`, `npm run typecheck`, and `npm run build` verify changes. GitHub Actions runs these checks
+on pushes and pull requests. The existing Vercel Git integration publishes branch previews and deploys `main`.
+Full conversation requires a working `ANTHROPIC_API_KEY` on Core. ElevenLabs requires
+`ELEVENLABS_API_KEY` and the appropriate `ELEVENLABS_VOICE_EN`, `_ST`, or `_ZU` voice ID.
+
 ```bash
 npm install
 CORE_API_URL=http://localhost:4000 npm run dev    # opens on :3001

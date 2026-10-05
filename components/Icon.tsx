@@ -1,5 +1,7 @@
 /* Line icon set (24px, currentColor). */
 const P: Record<string, React.ReactNode> = {
+  speaker: <><path d="M11 5 6 9H3v6h3l5 4zM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" /></>,
+  muted: <><path d="M11 5 6 9H3v6h3l5 4zM16 9l5 6M21 9l-5 6" /></>,
   home: <><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20h14V9.5" /><path d="M9.5 20v-6h5v6" /></>,
   accounts: <><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20c.8-3.8 3.9-6 7.5-6s6.7 2.2 7.5 6" /><circle cx="12" cy="12" r="10" /></>,
   transfer: <><path d="M4 8h15l-3.5-3.5" /><path d="M20 16H5l3.5 3.5" /></>,

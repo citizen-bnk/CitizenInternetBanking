@@ -21,7 +21,7 @@ const SUGGESTIONS = [
 function AiHome() {
   const { data } = useBank();
   const params = useSearchParams();
-  const { messages, send, busy, listening, speaking, partial, voice } = useAssistant();
+  const { messages, send, busy, listening, speaking, partial, voice, voiceReplies, toggleVoiceReplies } = useAssistant();
   const asked = useRef(false);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function AiHome() {
           )}
         </div>
         {messages.length > 0 && <ChatLog messages={messages} busy={busy} />}
-        <Composer onSend={(t) => send(t)} onMic={voice} listening={listening} busy={busy} partial={partial} />
+        <Composer onSend={(t) => send(t)} onMic={voice} listening={listening} busy={busy} partial={partial} voiceReplies={voiceReplies} onToggleVoice={toggleVoiceReplies} />
         <SecureNote />
       </section>
 

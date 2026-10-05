@@ -20,18 +20,20 @@ export function ChatLog({ messages, busy }: { messages: Msg[]; busy: boolean }) 
           )}
         </div>
       ))}
-      {busy && <div className="bubble ai faint">Citizen AI is thinking…</div>}
+      {busy && <div className="bubble ai faint" role="status">Citizen AI is thinking<span className="typing-dots" aria-hidden="true"><i /><i /><i /></span></div>}
     </div>
   );
 }
 
-export function Composer({ onSend, onMic, listening, busy, partial, placeholder = "Speak or type to Citizen AI…" }: {
+export function Composer({ onSend, onMic, listening, busy, partial, voiceReplies, onToggleVoice, placeholder = "Speak or type to Citizen AI…" }: {
   onSend: (t: string) => void; onMic: () => void; listening: boolean; busy: boolean; partial?: string; placeholder?: string;
+  voiceReplies?: boolean; onToggleVoice?: () => void;
 }) {
   const [text, setText] = useState("");
   const submit = (e: React.FormEvent) => { e.preventDefault(); if (!text.trim() || busy) return; onSend(text); setText(""); };
   return (
     <form className="composer" onSubmit={submit}>
+      {onToggleVoice && <button type="button" className="send" onClick={onToggleVoice} aria-pressed={voiceReplies} aria-label={voiceReplies ? "Mute spoken replies" : "Enable spoken replies"} title={voiceReplies ? "Mute spoken replies" : "Enable spoken replies"}><Icon name={voiceReplies ? "speaker" : "muted"} size={18} /></button>}
       <button type="button" className={`mic${listening ? " on" : ""}`} onClick={onMic} aria-label={listening ? "Stop listening" : "Speak to Citizen AI"} aria-pressed={listening}>
         <Icon name="mic" size={20} />
       </button>

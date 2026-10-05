@@ -37,27 +37,56 @@ export function stopListening() { (listen as unknown as { current?: Rec }).curre
 
 let ttsUnavailable = false;
 let currentAudio: HTMLAudioElement | null = null;
+let cancelPlayback: (() => void) | null = null;
+let speechVersion = 0;
 
 export async function speak(text: string, lang: string) {
   stopSpeaking();
+  const version = speechVersion;
   if (!ttsUnavailable) {
     try {
       const res = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, language_code: lang }) });
       if (res.ok) {
-        currentAudio = new Audio(URL.createObjectURL(await res.blob()));
-        await currentAudio.play();
+        const blob = await res.blob();
+        if (version !== speechVersion) return;
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        currentAudio = audio;
+        await new Promise<void>((resolve, reject) => {
+          const finish = (error?: Error) => {
+            audio.onended = audio.onerror = null;
+            audio.pause();
+            URL.revokeObjectURL(url);
+            if (currentAudio === audio) { currentAudio = null; cancelPlayback = null; }
+            error ? reject(error) : resolve();
+          };
+          cancelPlayback = () => finish();
+          audio.onended = () => finish();
+          audio.onerror = () => finish(new Error("Voice playback failed"));
+          audio.play().catch(() => finish(new Error("Voice playback blocked")));
+        });
         return;
       }
       if (res.status === 501) ttsUnavailable = true;
     } catch { /* fall through */ }
   }
+  if (version !== speechVersion) return;
   if ("speechSynthesis" in window) {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang === "zu" ? "zu-ZA" : lang === "st" ? "st-ZA" : "en-ZA";
-    window.speechSynthesis.speak(u);
+    await new Promise<void>((resolve) => {
+      const finish = () => { u.onend = u.onerror = null; cancelPlayback = null; resolve(); };
+      cancelPlayback = finish;
+      u.onend = finish;
+      u.onerror = finish;
+      window.speechSynthesis.speak(u);
+    });
   }
 }
 export function stopSpeaking() {
+  speechVersion++;
+  cancelPlayback?.();
+  cancelPlayback = null;
   currentAudio?.pause();
   currentAudio = null;
   if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
