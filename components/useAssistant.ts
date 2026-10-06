@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useBank } from "@/lib/bank";
 import { fuzzy, money } from "@/lib/format";
@@ -71,14 +71,39 @@ export function useAssistant(initial?: Msg[]) {
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [voiceReplies, setVoiceReplies] = useState(true);
+  const voiceEnabled = useRef(true);
+  const mounted = useRef(true);
+  const playback = useRef(0);
+  const inFlight = useRef(false);
   const [partial, setPartial] = useState("");
   const history = useRef<{ role: "user" | "assistant"; content: string }[]>([]);
   const lang = data?.user.preferredLanguage ?? "en";
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; playback.current++; stopListening(); stopSpeaking(); };
+  }, []);
+  const toggleVoiceReplies = useCallback(() => {
+    voiceEnabled.current = !voiceEnabled.current;
+    setVoiceReplies(voiceEnabled.current);
+    playback.current++;
+    stopSpeaking();
+    setSpeaking(false);
+  }, []);
+  const readReply = useCallback((reply: string, enabled: boolean) => {
+    if (!enabled || !mounted.current) return;
+    const version = ++playback.current;
+    setSpeaking(true);
+    void speak(reply, lang).finally(() => { if (version === playback.current) setSpeaking(false); });
+  }, [lang]);
 
   const send = useCallback(async (text: string, opts: { voice?: boolean } = {}) => {
     const clean = text.trim();
-    if (!clean || busy) return;
+    if (!clean || inFlight.current) return;
+    inFlight.current = true;
+    playback.current++;
     stopSpeaking();
+    setSpeaking(false);
     setMessages((m) => [...m, { role: "user", content: clean }]);
     history.current = [...history.current, { role: "user" as const, content: clean }].slice(-12);
     setBusy(true);
@@ -86,15 +111,20 @@ export function useAssistant(initial?: Msg[]) {
       const res = await api<{ reply: string; action?: Action }>("/api/assistant", { body: { messages: history.current, language: lang } });
       history.current = [...history.current, { role: "assistant" as const, content: res.reply }].slice(-12);
       setMessages((m) => [...m, { role: "assistant", content: res.reply, action: res.action ? actionToRoute(res.action, data) : undefined }]);
-      if (opts.voice) { setSpeaking(true); speak(res.reply, lang).finally(() => setTimeout(() => setSpeaking(false), 1500)); }
+      readReply(res.reply, opts.voice ?? voiceEnabled.current);
     } catch (e) {
       history.current = history.current.slice(0, -1);
-      if (e instanceof ApiError && e.code === "AI_OFFLINE") setMessages((m) => [...m, localAnswer(clean, data)]);
+      if (e instanceof ApiError && e.code === "AI_OFFLINE") {
+        const reply = localAnswer(clean, data);
+        setMessages((m) => [...m, reply]);
+        readReply(reply.content, opts.voice ?? voiceEnabled.current);
+      }
       else setMessages((m) => [...m, { role: "assistant", content: e instanceof Error ? e.message : "Something went wrong." }]);
     } finally {
       setBusy(false);
+      inFlight.current = false;
     }
-  }, [busy, data, lang]);
+  }, [data, lang, readReply, voiceReplies]);
 
   const voice = useCallback(async () => {
     if (listening) { stopListening(); return; }
@@ -103,18 +133,20 @@ export function useAssistant(initial?: Msg[]) {
       return;
     }
     stopSpeaking();
+    playback.current++;
+    setSpeaking(false);
     setListening(true);
     setPartial("");
     try {
       const text = await listen(lang, setPartial);
       setListening(false);
       setPartial("");
-      if (text) await send(text, { voice: true });
+      if (text) await send(text);
     } catch (e) {
       setListening(false);
       setMessages((m) => [...m, { role: "assistant", content: e instanceof Error ? e.message : "I couldn't hear that." }]);
     }
   }, [lang, listening, send]);
 
-  return { messages, send, busy, listening, speaking, partial, voice };
+  return { messages, send, busy, listening, speaking, partial, voice, voiceReplies, toggleVoiceReplies };
 }

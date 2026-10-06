@@ -110,7 +110,7 @@ export default function Dashboard() {
           <div><b>Citizen Bank AI</b><div className="online">Online</div></div>
         </div>
         <ChatLog messages={ai.messages} busy={ai.busy} />
-        <Composer onSend={(t) => ai.send(t)} onMic={ai.voice} listening={ai.listening} busy={ai.busy} partial={ai.partial} placeholder="Type or speak your request…" />
+        <Composer onSend={(t) => ai.send(t)} onMic={ai.voice} listening={ai.listening} busy={ai.busy} partial={ai.partial} voiceReplies={ai.voiceReplies} onToggleVoice={ai.toggleVoiceReplies} placeholder="Type or speak your request…" />
       </aside>
     </div>
   );

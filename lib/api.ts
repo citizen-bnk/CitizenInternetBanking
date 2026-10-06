@@ -18,6 +18,10 @@ export async function api<T = unknown>(path: string, opts: { method?: string; bo
   if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/api/auth/")) {
     window.location.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
   }
+  if (!res.ok && typeof window !== 'undefined') {
+    if (json?.code === 'KYC_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:kyc-required',{detail:json.kyc}));
+    if (json?.code === 'REAUTH_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:reauth-required'));
+  }
   if (!res.ok) throw new ApiError(json?.error ?? "Something went wrong. Please try again.", res.status, json?.code);
   return json as T;
 }

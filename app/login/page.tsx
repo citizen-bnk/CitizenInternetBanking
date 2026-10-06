@@ -4,8 +4,13 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import AuthHero from "@/components/AuthHero";
 
+import AccessButtons from "@/components/AccessButtons";
+import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
+
 function LoginForm() {
   const params = useSearchParams();
+  const reasonNotice = loginReasonMessage(params.get("reason"));
+  const websiteSignIn = websiteSignInUrl(process.env.NEXT_PUBLIC_SIGN_IN_URL);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +33,17 @@ function LoginForm() {
 
   return (
     <form className="box" onSubmit={submit} noValidate>
-      <h2>Sign in</h2>
+      <h2>Welcome to Citizen Bank</h2>
+      {reasonNotice && <div className="alert info" role="status">{reasonNotice}</div>}
+      <AccessButtons />
+      {websiteSignIn && (
+        <p style={{ margin: "0 0 20px", fontSize: 14 }}>
+          Already an investor or shareholder with a Citizen account?{" "}
+          <a href={websiteSignIn} style={{ color: "var(--gold)", fontWeight: 600 }}>Sign in with your Citizen account</a>
+        </p>
+      )}
+      <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
       <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Welcome back to Citizen Bank internet banking.</p>
-      {params.get("reason") === "timeout" && <div className="alert info">You were signed out after a period of inactivity.</div>}
       {error && <div className="alert err" role="alert">{error}</div>}
       <label className="field"><span>Email</span><input className="input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
       <label className="field"><span>Password</span><input className="input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
@@ -41,6 +54,7 @@ function LoginForm() {
           <p>Demo profile: <button type="button" className="link" onClick={() => setEmail("palesa@demo.citizenbank.co.ls")}>palesa@demo.citizenbank.co.ls</button> — ask your administrator for the demo password.</p>
         </div>
       )}
+    </details>
     </form>
   );
 }

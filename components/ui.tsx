@@ -51,5 +51,5 @@ export function Skeleton({ h = 60, style }: { h?: number; style?: React.CSSPrope
 }
 
 export function SecureNote() {
-  return <div className="secure-note"><Icon name="lock" size={14} /> Bank-grade security</div>;
+  return <div className="secure-note"><Icon name="lock" size={14} /> Bank-grade security · Citizen AI uses an AI-generated voice</div>;
 }

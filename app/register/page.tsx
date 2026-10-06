@@ -3,6 +3,8 @@
 import { useState } from "react";
 import AuthHero from "@/components/AuthHero";
 
+import AccessButtons from "@/components/AccessButtons";
+
 export default function RegisterPage() {
   const [f, setF] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +30,8 @@ export default function RegisterPage() {
       <AuthHero />
       <div className="auth-form">
         <form className="box" onSubmit={submit} noValidate>
-          <h2>Open your account</h2>
-          <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>A current account, a savings account and a virtual card — in two minutes.</p>
+          <h2>Start exploring</h2><AccessButtons /><details><summary>Create a profile with email instead</summary>
+          <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Your profile comes first. Complete account checks when you need them.</p>
           {error && <div className="alert err" role="alert">{error}</div>}
           <div className="row2">
             <label className="field"><span>First name</span><input className="input" autoComplete="given-name" value={f.firstName} onChange={set("firstName")} required /></label>
@@ -39,9 +41,9 @@ export default function RegisterPage() {
           <label className="field"><span>Mobile number</span><input className="input" type="tel" autoComplete="tel" placeholder="+266 5…" value={f.phone} onChange={set("phone")} /></label>
           <label className="field"><span>Password</span><input className="input" type="password" autoComplete="new-password" value={f.password} onChange={set("password")} required /></label>
           <p className="hint" style={{ marginTop: -8, marginBottom: 16 }}>At least 10 characters, with a letter and a number.</p>
-          <button className="btn block" disabled={busy}>{busy ? "Opening your account…" : "Open account"}</button>
+          <button className="btn block" disabled={busy}>{busy ? "Creating your profile…" : "Open account"}</button>
           <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>Already with us? <a href="/login" style={{ color: "var(--gold)", fontWeight: 600 }}>Sign in</a></p>
-        </form>
+        </details></form>
       </div>
     </main>
   );
