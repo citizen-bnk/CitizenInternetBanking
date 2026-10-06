@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import DemoBanner from "@/components/DemoBanner";
 
 export const metadata: Metadata = {
   title: { default: "Citizen Bank — Internet Banking", template: "%s · Citizen Bank" },
@@ -14,7 +15,11 @@ import AccessPanel from "@/components/AccessPanel";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
-      <body>{children}<AccessPanel /></body>
+      <body>
+        {children}
+        <DemoBanner />
+        <AccessPanel />
+      </body>
     </html>
   );
 }
