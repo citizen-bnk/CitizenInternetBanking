@@ -40,7 +40,7 @@ export default function SettingsPage() {
       {msg && <div className={`alert ${msg.ok ? "ok" : "err"}`}>{msg.text}</div>}
       <div className="two-col">
         <section className="panel">
-          <div className="panel-head"><h2>Profile</h2></div>
+          <div className="panel-head"><h2>Profile</h2><a href="/profile">Manage all Citizen roles</a></div>
           <div className="row" style={{ borderBottom: 0 }}>
             <span className="avatar" style={{ width: 56, height: 56, fontSize: 18 }}>{initials(`${u.firstName} ${u.lastName}`)}</span>
             <span className="grow"><span className="title" style={{ fontSize: 17 }}>{u.firstName} {u.lastName}</span><span className="sub">{u.email}</span></span>
