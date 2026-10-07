@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import AuthHero from "@/components/AuthHero";
 
+import DemoAccounts from "@/components/DemoAccounts";
 import AccessButtons from "@/components/AccessButtons";
 import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
 
@@ -36,6 +37,8 @@ function LoginForm() {
       <h2>Welcome to Citizen Bank</h2>
       {reasonNotice && <div className="alert info" role="status">{reasonNotice}</div>}
       <AccessButtons />
+      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app/"}>Back to Citizen Bank website</a></p>
+      <DemoAccounts />
       {websiteSignIn && (
         <p style={{ margin: "0 0 20px", fontSize: 14 }}>
           Already an investor or shareholder with a Citizen account?{" "}
@@ -49,11 +52,7 @@ function LoginForm() {
       <label className="field"><span>Password</span><input className="input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
       <button className="btn block" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
       <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>New to Citizen Bank? <a href="/register" style={{ color: "var(--gold)", fontWeight: 600 }}>Open an account</a></p>
-      {process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN !== "false" && (
-        <div className="tip" style={{ marginTop: 20 }}>
-          <p>Demo profile: <button type="button" className="link" onClick={() => setEmail("palesa@demo.citizenbank.co.ls")}>palesa@demo.citizenbank.co.ls</button> — ask your administrator for the demo password.</p>
-        </div>
-      )}
+
     </details>
     </form>
   );
