@@ -52,7 +52,7 @@ function LoginForm() {
       <button className="btn block" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
       <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>New to Citizen Bank? <a href="/register" style={{ color: "var(--gold)", fontWeight: 600 }}>Open an account</a></p>
 
-      <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://citizen-hub-demo.vercel.app")+"/reset-password"}>Account activation / recovery · Coming soon</a></p>
+      <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://citizen-hub-demo.vercel.app")+"/reset-password"}>Activate account / reset password</a></p>
       <DemoAccounts />
     </form>
   );
