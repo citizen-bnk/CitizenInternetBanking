@@ -1,5 +1,5 @@
 export type Account = {
-  id: string; name: string; type: "CURRENT" | "SAVINGS" | "FIXED_DEPOSIT"; number: string; last4: string;
+  allowMixedCardForms?:boolean;allowedCardForms?:string[];id: string; name: string; type: "CURRENT" | "SAVINGS" | "FIXED_DEPOSIT" | "CRYPTO"; number: string; last4: string;
   currency: string; balance: string; status: string; interestRate: string | null; maturesAt: string | null;
 };
 export type Card = {
@@ -22,6 +22,7 @@ export type Entry = {
 };
 export type Country = { code: string; name: string; currency: string; rate: number };
 export type Overview = {
+  energize?:{available:boolean;amount?:string|null;source?:string;message?:string;issue?:string};
   user: { id: string; firstName: string; lastName: string; email: string; phone: string | null; preferredLanguage: string; preferredTheme: string; roles: string[] };
   accounts: Account[]; cards: Card[]; beneficiaries: Beneficiary[]; billers: Biller[]; scheduled: Scheduled[]; loans: Loan[];
   recent: Entry[]; unreadNotifications: number;
