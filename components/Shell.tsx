@@ -29,7 +29,8 @@ const NAV_CLASSIC = [
 ];
 
 type Notif = { id: string; title: string; body: string; read: boolean; createdAt: string };
-const IDLE_LIMIT_MS = 10 * 60 * 1000;
+// Matches Core, which ends a session after 5 minutes without API activity.
+const IDLE_LIMIT_MS = 5 * 60 * 1000;
 
 function store(key: string, value?: string) {
   try {

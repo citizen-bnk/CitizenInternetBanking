@@ -16,7 +16,7 @@ export async function api<T = unknown>(path: string, opts: { method?: string; bo
   });
   const json = await res.json().catch(() => null);
   if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/api/auth/")) {
-    window.location.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+    window.location.replace(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   }
   if (!res.ok && typeof window !== 'undefined') {
     if (json?.code === 'KYC_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:kyc-required',{detail:json.kyc}));

@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import AuthHero from "@/components/AuthHero";
+import { safeNext } from "@/lib/redirect";
 
 import AccessButtons from "@/components/AccessButtons";
 import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
@@ -24,7 +25,7 @@ function LoginForm() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Sign-in failed. Please try again.");
       const next = params.get("next");
-      window.location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+      window.location.href = safeNext(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
       setBusy(false);

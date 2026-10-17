@@ -72,7 +72,7 @@ export default function SettingsPage() {
         <section className="panel">
           <div className="panel-head"><h2>Security</h2></div>
           <div className="list">
-            <div className="row"><span className="ico"><Icon name="lock" size={20} /></span><span className="grow"><span className="title">Automatic sign-out</span><span className="sub">Signed out after 10 minutes of inactivity (5 on mobile).</span></span><span className="chip ok">On</span></div>
+            <div className="row"><span className="ico"><Icon name="lock" size={20} /></span><span className="grow"><span className="title">Automatic sign-out</span><span className="sub">Signed out after 5 minutes of inactivity.</span></span><span className="chip ok">On</span></div>
             <div className="row"><span className="ico"><Icon name="shield" size={20} /></span><span className="grow"><span className="title">Payment confirmation</span><span className="sub">Every payment — including ones Citizen AI prepares — needs your confirmation.</span></span><span className="chip ok">On</span></div>
             <div className="row"><span className="ico"><Icon name="bell" size={20} /></span><span className="grow"><span className="title">Transaction alerts</span><span className="sub">You&apos;re notified when money arrives or a scheduled payment fails.</span></span><span className="chip ok">On</span></div>
           </div>
