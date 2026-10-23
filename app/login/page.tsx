@@ -11,17 +11,25 @@ import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
 function LoginForm() {
   const params = useSearchParams();
   const reasonNotice = loginReasonMessage(params.get("reason"));
-  const websiteSignIn = websiteSignInUrl(process.env.NEXT_PUBLIC_SIGN_IN_URL);
+  const centralSignIn = websiteSignInUrl(process.env.NEXT_PUBLIC_SIGN_IN_URL)
+    ?? "https://hub.citizenbank.co.ls/api/platform/handoff?audience=banking";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [legacyOpen, setLegacyOpen] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true); setError(null);
+    setBusy(true);
+    setError(null);
     try {
-      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        signal: AbortSignal.timeout(45000),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Sign-in failed. Please try again.");
       const next = params.get("next");
@@ -33,27 +41,44 @@ function LoginForm() {
   }
 
   return (
-    <form className="box" onSubmit={submit} noValidate>
+    <form className="box" onSubmit={submit}>
+      <span className="access-eyebrow">ONE CITIZEN. MANY POSSIBILITIES.</span>
       <h2>Welcome to Citizen Bank</h2>
       {reasonNotice && <div className="alert info" role="status">{reasonNotice}</div>}
-      <AccessButtons />
-      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app/"}>Back to Citizen Bank website</a></p>
-      <DemoAccounts />
-      {websiteSignIn && (
-        <p style={{ margin: "0 0 20px", fontSize: 14 }}>
-          Already an investor or shareholder with a Citizen account?{" "}
-          <a href={websiteSignIn} style={{ color: "var(--gold)", fontWeight: 600 }}>Sign in with your Citizen account</a>
-        </p>
-      )}
-      <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
-      <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Welcome back to Citizen Bank internet banking.</p>
-      {error && <div className="alert err" role="alert">{error}</div>}
-      <label className="field"><span>Email</span><input className="input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-      <label className="field"><span>Password</span><input className="input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-      <button className="btn block" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
-      <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>New to Citizen Bank? <a href="/register" style={{ color: "var(--gold)", fontWeight: 600 }}>Open an account</a></p>
+      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls/"}>Back to Citizen Bank website</a></p>
 
-    </details>
+      <section className="central-sign-in">
+        <p className="muted">Your customer profile is managed through one Citizen identity shared with the mobile app and Citizen Hub.</p>
+        <a className="button primary full" href={centralSignIn}>Continue with your Citizen account</a>
+        <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>New to Citizen? <a href="/register" style={{ color: "var(--gold)", fontWeight: 600 }}>Create your Citizen account</a></p>
+      </section>
+
+      {error && (
+        <div className="alert err" role="alert">
+          <p>{error}</p>
+          <button type="button" className="button" onClick={() => setError(null)}>Dismiss</button>
+        </div>
+      )}
+
+      <details
+        open={legacyOpen || Boolean(error)}
+        onToggle={(event) => setLegacyOpen(event.currentTarget.open)}
+      >
+        <summary>Existing banking credentials or demo access</summary>
+        <p className="muted">Use this option for an existing Core banking login, an enrolled passkey or a demonstration profile. New sign-ups should start with your Citizen account above.</p>
+        <label className="field">
+          <span>Email</span>
+          <input className="input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </label>
+        <label className="field">
+          <span>Password</span>
+          <input className="input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </label>
+        <AccessButtons />
+        <button className="btn block" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in with existing banking credentials"}</button>
+        <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://hub.citizenbank.co.ls") + "/reset-password"}>Activate account / reset password</a></p>
+        <DemoAccounts />
+      </details>
     </form>
   );
 }
