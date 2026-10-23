@@ -39,7 +39,7 @@ function LoginForm() {
       <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls/"}>Back to Citizen Bank website</a></p>
       {websiteSignIn && (
         <p style={{ margin: "0 0 20px", fontSize: 14 }}>
-          Already an investor or shareholder with a Citizen account?{" "}
+          Use the same Citizen identity across Hub, Internet Banking and the app.{" "}
           <a href={websiteSignIn} style={{ color: "var(--gold)", fontWeight: 600 }}>Sign in with your Citizen account</a>
         </p>
       )}
