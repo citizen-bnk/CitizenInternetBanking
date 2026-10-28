@@ -13,7 +13,7 @@ import type { Entry } from "@/lib/types";
 const TYPE_LABEL: Record<string, string> = { CURRENT: "Transactional", SAVINGS: "Savings", FIXED_DEPOSIT: "Fixed deposit" };
 
 function Accounts() {
-  const { data } = useBank();
+  const { data, refresh } = useBank();
   const router = useRouter();
   const params = useSearchParams();
   const selectedId = params.get("id") ?? data?.accounts[0]?.id;
@@ -21,6 +21,22 @@ function Accounts() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [q, setQ] = useState("");
   const [dir, setDir] = useState<"all" | "in" | "out">("all");
+  const [activationMessage, setActivationMessage] = useState("");
+  const [activating, setActivating] = useState(false);
+
+  async function activate(accountId: string) {
+    setActivating(true);
+    setActivationMessage("");
+    try {
+      await api("/api/accounts/activate", { body: { accountId } });
+      await refresh();
+      setActivationMessage("Account activated.");
+    } catch (error) {
+      setActivationMessage(error instanceof Error ? error.message : "Activation could not be completed.");
+    } finally {
+      setActivating(false);
+    }
+  }
 
   useEffect(() => {
     if (!acc) return;
@@ -42,15 +58,16 @@ function Accounts() {
   return (
     <>
       <PageHead title="My Accounts" sub={`Total balance ${money(total)}${eq ? ` · ≈ ${eq}` : ""} across ${data.accounts.length} accounts`}
-        actions={<Link className="btn secondary small" href="/transfers?tab=own"><Icon name="transfer" size={16} /> Move money</Link>} />
+        actions={data.accounts.some((a) => a.status === "ACTIVE") ? <Link className="btn secondary small" href="/transfers?tab=own"><Icon name="transfer" size={16} /> Move money</Link> : undefined} />
+      {activationMessage && <div className="alert" role="status">{activationMessage}</div>}
       <div className="split" style={{ gridTemplateColumns: "minmax(0,0.8fr) minmax(0,1.4fr)" }}>
         <div>
           {data.accounts.map((a) => (
             <div key={a.id} className={`row clickable${a.id === acc.id ? " selected" : ""}`} onClick={() => router.replace(`/accounts?id=${a.id}`)}
               role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && router.replace(`/accounts?id=${a.id}`)}>
               <span className="ico"><Icon name={a.type === "SAVINGS" ? "piggy" : a.type === "FIXED_DEPOSIT" ? "lock" : "wallet"} size={20} /></span>
-              <span className="grow"><span className="title">{a.name}</span><span className="sub">{a.number.replace(/(\d{4})(?=\d)/g, "$1 ")}</span></span>
-              <span style={{ textAlign: "right" }}><span className="amt pos num" style={{ display: "block" }}>{money(a.balance)}</span><span className="faint" style={{ fontSize: 12 }}>Available</span></span>
+              <span className="grow"><span className="title">{a.name}</span><span className="sub">{a.number.replace(/(\d{4})(?=\d)/g, "$1 ")} · {a.status === "DORMANT" ? "Activation needed" : a.status}</span></span>
+              <span style={{ textAlign: "right" }}><span className="amt pos num" style={{ display: "block" }}>{money(a.balance)}</span><span className="faint" style={{ fontSize: 12 }}>{a.status === "ACTIVE" ? "Available" : "Not available yet"}</span></span>
             </div>
           ))}
         </div>
@@ -63,6 +80,11 @@ function Accounts() {
               <div className="faint" style={{ fontSize: 12.5 }}>
                 Account {acc.number}{acc.interestRate ? ` · ${acc.interestRate}% p.a.` : ""}{acc.maturesAt ? ` · matures ${fmtDay(acc.maturesAt)}` : ""}
               </div>
+              {acc.status === "DORMANT" && <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginTop: 16 }}>
+                <span className="muted">Dormant · complete identity checks to use this account.</span>
+                <Link className="btn secondary small" href="/kyc">Complete profile</Link>
+                <button className="btn small" disabled={activating} onClick={() => activate(acc.id)}>{activating ? "Checking…" : "Activate account"}</button>
+              </div>}
             </div>
             <Link className="btn secondary small" href={`/statements/${acc.id}`} target="_blank"><Icon name="download" size={16} /> Statement</Link>
           </div>
