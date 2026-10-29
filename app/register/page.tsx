@@ -41,6 +41,7 @@ export default function RegisterPage() {
           <p className="hint" style={{ marginTop: -8, marginBottom: 16 }}>At least 10 characters, with a letter and a number.</p>
           <button className="btn block" disabled={busy}>{busy ? "Opening your account…" : "Open account"}</button>
           <p className="muted" style={{ textAlign: "center", marginTop: 18 }}>Already with us? <a href="/login" style={{ color: "var(--gold)", fontWeight: 600 }}>Sign in</a></p>
+          <p className="muted" style={{ textAlign: "center", marginTop: 12 }}><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"} style={{ color: "var(--gold)" }}>Back to Citizen Bank website</a></p>
         </form>
       </div>
     </main>

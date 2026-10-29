@@ -212,6 +212,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <div className="dropdown" role="menu" style={{ width: 240 }}>
                 <div className="item" style={{ cursor: "default" }}><div><b>{u?.firstName} {u?.lastName}</b><small>{u?.email}</small></div></div>
                 <Link className="item" href="/settings" role="menuitem"><Icon name="settings" size={18} /> Settings</Link>
+                <a className="item" href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"} role="menuitem">Citizen Bank website</a>
                 <button className="item" role="menuitem" onClick={() => logout()}><Icon name="logout" size={18} /> Log out</button>
               </div>
             )}
