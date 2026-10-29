@@ -21,7 +21,7 @@ const SUGGESTIONS = [
 function AiHome() {
   const { data } = useBank();
   const params = useSearchParams();
-  const { messages, send, busy, listening, speaking, partial, voice } = useAssistant();
+  const { messages, send, busy, listening, speaking, partial, voice, confirmProfile, dismissProfile } = useAssistant();
   const asked = useRef(false);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function AiHome() {
             <>How can I help you today?<small>You can ask me about your accounts, make payments, transfer money and more.</small></>
           )}
         </div>
-        {messages.length > 0 && <ChatLog messages={messages} busy={busy} />}
+        {messages.length > 0 && <ChatLog messages={messages} busy={busy} onConfirmProfile={confirmProfile} onDismissProfile={dismissProfile} />}
         <Composer onSend={(t) => send(t)} onMic={voice} listening={listening} busy={busy} partial={partial} />
         <SecureNote />
       </section>

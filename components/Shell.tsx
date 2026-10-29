@@ -7,6 +7,7 @@ import Icon from "./Icon";
 import { useBank } from "@/lib/bank";
 import { api } from "@/lib/api";
 import { fmtDateTime, initials } from "@/lib/format";
+import ProfileQuestion from "./ProfileQuestion";
 
 const NAV_AI = [
   { href: "/", label: "Citizen AI", icon: "ai" },
@@ -68,14 +69,33 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  // Sign out after 10 minutes without interaction.
+  // Only real interaction renews Core's signed idle window. Background polling does not.
   useEffect(() => {
     let last = Date.now();
-    const bump = () => { last = Date.now(); };
-    const evs = ["pointerdown", "keydown", "scroll"];
+    store("cb_last_activity", String(last));
+    let lastRenewal = Date.now();
+    let ending = false;
+    const end = () => {
+      if (ending) return;
+      ending = true;
+      logout("timeout");
+    };
+    const bump = () => {
+      last = Math.max(last, Number(store("cb_last_activity") || 0));
+      if (Date.now() - last > IDLE_LIMIT_MS) return end();
+      last = Date.now();
+      store("cb_last_activity", String(last));
+      if (last - lastRenewal > 60_000) {
+        lastRenewal = last;
+        api("/api/auth/activity", { body: {} }).catch(end);
+      }
+    };
+    const evs = ["pointerdown", "keydown", "scroll", "touchstart"];
     evs.forEach((e) => window.addEventListener(e, bump, { passive: true }));
-    const t = setInterval(() => { if (Date.now() - last > IDLE_LIMIT_MS) logout("timeout"); }, 20000);
-    return () => { evs.forEach((e) => window.removeEventListener(e, bump)); clearInterval(t); };
+    const check = () => { last = Math.max(last, Number(store("cb_last_activity") || 0)); if (Date.now() - last > IDLE_LIMIT_MS) end(); };
+    const t = setInterval(check, 20000);
+    document.addEventListener("visibilitychange", check);
+    return () => { evs.forEach((e) => window.removeEventListener(e, bump)); clearInterval(t); document.removeEventListener("visibilitychange", check); };
   }, []);
 
   function toggleCollapse() {
@@ -207,6 +227,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
       {mobileOpen && <div className="modal-bg" style={{ zIndex: 19, background: "rgba(3,1,12,.5)" }} onClick={() => setMobileOpen(false)} />}
+      {u && <ProfileQuestion userId={u.id} context={pathname.startsWith("/loans") ? "loans" : "general"} onSaved={refresh} />}
     </div>
   );
 }

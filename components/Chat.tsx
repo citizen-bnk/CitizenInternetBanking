@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import type { Msg } from "./useAssistant";
 
-export function ChatLog({ messages, busy }: { messages: Msg[]; busy: boolean }) {
+export function ChatLog({ messages, busy, onConfirmProfile, onDismissProfile }: { messages: Msg[]; busy: boolean;
+  onConfirmProfile?: (index: number) => void; onDismissProfile?: (index: number) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: "smooth" }); }, [messages, busy]);
   return (
@@ -18,6 +19,13 @@ export function ChatLog({ messages, busy }: { messages: Msg[]; busy: boolean }) 
               <Link className="btn small" href={m.action.href}>{m.action.label} <Icon name="chevron" size={16} /></Link>
             </div>
           )}
+          {m.profileSuggestion && <div className="cta" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <span>Save {m.profileSuggestion.field.replace(/([A-Z])/g, " $1").toLowerCase()}: <b>{m.profileSuggestion.value}</b>?</span>
+            {!m.profileSuggestion.status && <><button className="btn small" onClick={() => onConfirmProfile?.(i)}>Save to profile</button><button className="btn secondary small" onClick={() => onDismissProfile?.(i)}>No thanks</button></>}
+            {m.profileSuggestion.status === "saved" && <span>Saved.</span>}
+            {m.profileSuggestion.status === "dismissed" && <span>Not saved.</span>}
+            {m.profileSuggestion.status === "error" && <span>Could not save. Update this detail in Settings.</span>}
+          </div>}
         </div>
       ))}
       {busy && <div className="bubble ai faint">Citizen AI is thinking…</div>}

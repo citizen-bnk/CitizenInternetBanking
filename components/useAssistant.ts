@@ -7,7 +7,8 @@ import { fuzzy, money } from "@/lib/format";
 import { listen, speak, speechSupported, stopListening, stopSpeaking } from "@/lib/speech";
 import type { Overview } from "@/lib/types";
 
-export type Msg = { role: "user" | "assistant"; content: string; action?: { href: string; label: string } };
+export type Msg = { role: "user" | "assistant"; content: string; action?: { href: string; label: string };
+  profileSuggestion?: { field: string; value: string; status?: "saved" | "dismissed" | "error" } };
 type Action = { flow: string; prefill: Record<string, string> };
 
 /**
@@ -66,7 +67,7 @@ function localAnswer(text: string, data: Overview | null): Msg {
 }
 
 export function useAssistant(initial?: Msg[]) {
-  const { data } = useBank();
+  const { data, refresh } = useBank();
   const [messages, setMessages] = useState<Msg[]>(initial ?? []);
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
@@ -83,9 +84,9 @@ export function useAssistant(initial?: Msg[]) {
     history.current = [...history.current, { role: "user" as const, content: clean }].slice(-12);
     setBusy(true);
     try {
-      const res = await api<{ reply: string; action?: Action }>("/api/assistant", { body: { messages: history.current, language: lang } });
+      const res = await api<{ reply: string; action?: Action; profileSuggestion?: { field: string; value: string } }>("/api/assistant", { body: { messages: history.current, language: lang } });
       history.current = [...history.current, { role: "assistant" as const, content: res.reply }].slice(-12);
-      setMessages((m) => [...m, { role: "assistant", content: res.reply, action: res.action ? actionToRoute(res.action, data) : undefined }]);
+      setMessages((m) => [...m, { role: "assistant", content: res.reply, action: res.action ? actionToRoute(res.action, data) : undefined, profileSuggestion: res.profileSuggestion }]);
       if (opts.voice) { setSpeaking(true); speak(res.reply, lang).finally(() => setTimeout(() => setSpeaking(false), 1500)); }
     } catch (e) {
       history.current = history.current.slice(0, -1);
@@ -95,6 +96,21 @@ export function useAssistant(initial?: Msg[]) {
       setBusy(false);
     }
   }, [busy, data, lang]);
+
+  const confirmProfile = useCallback(async (index: number) => {
+    const suggestion = messages[index]?.profileSuggestion;
+    if (!suggestion || suggestion.status) return;
+    try {
+      await api("/api/profile/prompt", { body: { action: "confirm_suggestion", field: suggestion.field, value: suggestion.value } });
+      await refresh();
+      setMessages((items) => items.map((item, i) => i === index && item.profileSuggestion ? { ...item, profileSuggestion: { ...item.profileSuggestion, status: "saved" } } : item));
+    } catch {
+      setMessages((items) => items.map((item, i) => i === index && item.profileSuggestion ? { ...item, profileSuggestion: { ...item.profileSuggestion, status: "error" } } : item));
+    }
+  }, [messages, refresh]);
+  const dismissProfile = useCallback((index: number) => {
+    setMessages((items) => items.map((item, i) => i === index && item.profileSuggestion ? { ...item, profileSuggestion: { ...item.profileSuggestion, status: "dismissed" } } : item));
+  }, []);
 
   const voice = useCallback(async () => {
     if (listening) { stopListening(); return; }
@@ -116,5 +132,5 @@ export function useAssistant(initial?: Msg[]) {
     }
   }, [lang, listening, send]);
 
-  return { messages, send, busy, listening, speaking, partial, voice };
+  return { messages, send, busy, listening, speaking, partial, voice, confirmProfile, dismissProfile };
 }
