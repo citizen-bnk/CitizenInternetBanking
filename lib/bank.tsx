@@ -32,7 +32,7 @@ export function BankProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [refresh]);
   const value = useMemo(() => ({ data, error, refresh }), [data, error, refresh]);
-  return <BankCtx.Provider value={value}>{errorCode==='BANKING_ACCESS_REQUIRED'?<section role="alert" className="recovery" style={{maxWidth:560,margin:'10vh auto',padding:24}}><h1>Banking access is not available</h1><p>{error}</p><p>Issue: BANKING_ACCESS_REQUIRED</p><div style={{display:'flex',flexWrap:'wrap',gap:12}}><a href={process.env.NEXT_PUBLIC_HUB_URL||'https://hub.citizenbank.co.ls'}>Open Citizen Hub</a><button onClick={()=>window.history.back()}>Go back</button><a href={process.env.NEXT_PUBLIC_WEBSITE_URL||'https://citizenbank.co.ls'}>Citizen Bank website</a></div></section>:children}</BankCtx.Provider>;
+  return <BankCtx.Provider value={value}>{errorCode==='BANKING_ACCESS_REQUIRED'?<section role="alert" className="recovery" style={{maxWidth:560,margin:'10vh auto',padding:24}}><h1>Banking access is not available</h1><p>{error}</p><p>Issue: BANKING_ACCESS_REQUIRED</p><div style={{display:'flex',flexWrap:'wrap',gap:12}}><a href={process.env.NEXT_PUBLIC_WEBSITE_URL||'https://citizenbank.co.ls'}>Open Citizen Bank website</a><button onClick={()=>window.history.back()}>Go back</button><a href={process.env.NEXT_PUBLIC_WEBSITE_URL||'https://citizenbank.co.ls'}>Citizen Bank website</a></div></section>:children}</BankCtx.Provider>;
 }
 
 export const useBank = () => useContext(BankCtx);
