@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import EcosystemLinks from "./EcosystemLinks";
 import { useBank } from "@/lib/bank";
 import { api } from "@/lib/api";
 import { fmtDateTime, initials } from "@/lib/format";
@@ -141,6 +142,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </Link>
             </>
           )}
+          <EcosystemLinks />
         </nav>
         <div className="sidebar-foot">
           <button className="mode-switch" onClick={() => router.push(classic ? "/" : "/dashboard")} title={collapsed ? (classic ? "Switch to Citizen AI" : "Switch to Classic Banking") : undefined}>
