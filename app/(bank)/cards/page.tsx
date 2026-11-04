@@ -10,7 +10,7 @@ import { fuzzy, money, parseAmount } from "@/lib/format";
 import type { Card } from "@/lib/types";
 
 const STATUS: Record<Card["status"], { label: string; cls: string }> = {
-  ACTIVE: { label: "Active", cls: "ok" }, FROZEN: { label: "Frozen", cls: "warn" }, ORDERED: { label: "On its way", cls: "neutral" }, BLOCKED: { label: "Blocked", cls: "bad" },
+  ACTIVE: { label: "Active", cls: "ok" }, FROZEN: { label: "Frozen", cls: "warn" }, ORDERED: { label: "Simulated order", cls: "neutral" }, BLOCKED: { label: "Blocked", cls: "bad" },
 };
 
 function CardsPage() {
@@ -51,12 +51,10 @@ function CardsPage() {
     finally { setBusy(false); }
   }
 
-  const choices = [
-    ...(cards.some((c) => c.kind === "CRYPTO") ? [] : [{ label: "Crypto card", body: { kind: "CRYPTO" } }]),
-    ...cards.filter((c) => c.kind === "DEBIT").map((c) => ({ label: `Replacement ${c.label} card`, body: { kind: "DEBIT", accountId: c.accountId, replacesCardId: c.id } })),
-    ...data.accounts.filter((a) => a.type !== "FIXED_DEPOSIT" && !cards.some((c) => c.accountId === a.id)).map((a) => ({ label: `New ${a.name.replace(/ Account$/, "")} debit card`, body: { kind: "DEBIT", accountId: a.id } })),
-  ];
+  const cryptoAccounts=data.accounts.filter(a=>a.type==='CRYPTO');const choices:{label:string;body:{kind:'DEBIT'|'CRYPTO';accountId?:string;replacesCardId?:string;createCryptoAccount?:boolean}}[]=[...(cryptoAccounts.length?cryptoAccounts.map(a=>({label:'Additional '+a.name+' crypto card',body:{kind:'CRYPTO' as const,accountId:a.id}})):[{label:'Create crypto account + card',body:{kind:'CRYPTO' as const,createCryptoAccount:true}}]),...data.cards.filter(c=>c.kind==='DEBIT'&&c.accountId).map(c=>({label:'Replacement '+c.label+' card',body:{kind:'DEBIT' as const,accountId:c.accountId!,replacesCardId:c.id}})),...data.accounts.filter(a=>['CURRENT','SAVINGS'].includes(a.type)).map(a=>({label:'Additional '+a.name+' debit card',body:{kind:'DEBIT' as const,accountId:a.id}}))];
 
+
+  const chosen=choices.find(c=>c.label===order.choice)||choices[0],allowedForms=acct(chosen?.body.accountId||null)?.allowedCardForms||["VIRTUAL","PHYSICAL"];
   return (
     <>
       <PageHead title="My Cards" sub="Freeze, set limits and order cards instantly."
@@ -99,7 +97,7 @@ function CardsPage() {
             <section className="panel">
               <div className="panel-head"><h2>Card details</h2><span className={`chip ${STATUS[card.status].cls}`}>{STATUS[card.status].label}</span></div>
               <div className="summary">
-                <div className="line"><span>Card</span><span>{card.kind === "CRYPTO" ? "Crypto (wallet coming soon)" : `Debit — ${acct(card.accountId)?.name ?? card.label}`}</span></div>
+                <div className="line"><span>Card</span><span>{card.kind === "CRYPTO" ? "Simulated crypto account" : `Debit — ${acct(card.accountId)?.name ?? card.label}`}</span></div>
                 <div className="line"><span>Number</span><span>•••• {card.last4}</span></div>
                 <div className="line"><span>Form</span><span>{card.form === "PHYSICAL" ? "Virtual + physical" : "Virtual only"}</span></div>
                 <div className="line"><span>Expiry</span><span>{card.expiry}</span></div>
@@ -161,20 +159,20 @@ function CardsPage() {
           {!choices.length ? <p className="muted">You already have every card available to you.</p> : (
             <>
               <label className="field"><span>Card</span>
-                <select className="select" value={order.choice} onChange={(e) => setOrder({ ...order, choice: e.target.value })}>
+                <select className="select" value={order.choice} onChange={(e) => {const c=choices.find(x=>x.label===e.target.value),forms=acct(c?.body.accountId||null)?.allowedCardForms||["VIRTUAL","PHYSICAL"];setOrder({ ...order, choice: e.target.value,form:forms[0]||"VIRTUAL" });}}>
                   {choices.map((c) => <option key={c.label}>{c.label}</option>)}
                 </select>
               </label>
-              <div className="field"><span>Type</span>
-                <div className="pill-group">{["VIRTUAL", "PHYSICAL"].map((f) => <button key={f} className={order.form === f ? "active" : ""} onClick={() => setOrder({ ...order, form: f })}>{f === "VIRTUAL" ? "Virtual (instant)" : "Physical (3–5 days)"}</button>)}</div>
+              {(choices.find(c=>c.label===order.choice)||choices[0])?.body.createCryptoAccount&&<p>A zero-balance crypto sandbox account will be created first. It uses fictional LSL funds; no real cryptocurrency is held.</p>}<p className="muted">One form per account: multiple virtual cards or multiple physical cards. An administrator can approve mixed forms.</p><div className="field"><span>Form</span>
+                <div className="pill-group">{["VIRTUAL", "PHYSICAL"].map((f) => <button key={f} disabled={!allowedForms.includes(f)} className={order.form === f ? "active" : ""} onClick={() => setOrder({ ...order, form: f })}>{f === "VIRTUAL" ? "Virtual (instant)" : "Physical (simulated)"}</button>)}</div>
               </div>
               {order.form === "PHYSICAL" && <label className="field"><span>Delivery address</span><input className="input" value={order.address} onChange={(e) => setOrder({ ...order, address: e.target.value })} placeholder="Street, town" /></label>}
               <div className="foot">
                 <button className="btn ghost" onClick={() => setModal(null)}>Cancel</button>
-                <button className="btn" disabled={busy} onClick={() => {
+                <button className="btn" disabled={busy||!allowedForms.includes(order.form)} onClick={() => {
                   const c = choices.find((x) => x.label === order.choice) ?? choices[0];
                   run(() => api("/api/cards", { body: { ...c.body, form: order.form, deliveryAddress: order.address || undefined } }),
-                    order.form === "VIRTUAL" ? "Your new virtual card is ready to use." : "Your card is ordered — we'll let you know when it ships.");
+                    order.form === "VIRTUAL" ? "Your new virtual card is ready to use." : "Simulated physical-card order saved. No real card is manufactured or shipped.");
                 }}>Order card</button>
               </div>
             </>

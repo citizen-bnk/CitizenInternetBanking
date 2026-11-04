@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import EcosystemLinks from "./EcosystemLinks";
 import { useBank } from "@/lib/bank";
 import { api } from "@/lib/api";
 import { fmtDateTime, initials } from "@/lib/format";
@@ -15,7 +16,7 @@ const NAV_AI = [
   { href: "/payments", label: "Payments", icon: "payments" },
   { href: "/cards", label: "Cards", icon: "cards" },
   { href: "/insights", label: "Insights", icon: "insights" },
-  { href: "/settings", label: "Settings", icon: "settings" },
+  { href: "/profile", label: "Profile", icon: "settings" },
 ];
 const NAV_CLASSIC = [
   { href: "/dashboard", label: "Home", icon: "home" },
@@ -25,7 +26,7 @@ const NAV_CLASSIC = [
   { href: "/cards", label: "Cards", icon: "cards" },
   { href: "/loans", label: "Loans", icon: "loans" },
   { href: "/insights", label: "Financial Insights", icon: "insights" },
-  { href: "/settings", label: "Settings", icon: "settings" },
+  { href: "/profile", label: "Profile", icon: "settings" },
 ];
 
 type Notif = { id: string; title: string; body: string; read: boolean; createdAt: string };
@@ -141,6 +142,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </Link>
             </>
           )}
+          <EcosystemLinks />
         </nav>
         <div className="sidebar-foot">
           <button className="mode-switch" onClick={() => router.push(classic ? "/" : "/dashboard")} title={collapsed ? (classic ? "Switch to Citizen AI" : "Switch to Classic Banking") : undefined}>
@@ -191,7 +193,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             {menu === "profile" && (
               <div className="dropdown" role="menu" style={{ width: 240 }}>
                 <div className="item" style={{ cursor: "default" }}><div><b>{u?.firstName} {u?.lastName}</b><small>{u?.email}</small></div></div>
-                <Link className="item" href="/settings" role="menuitem"><Icon name="settings" size={18} /> Settings</Link>
+                <Link className="item" href="/profile#settings" role="menuitem"><Icon name="settings" size={18} /> Settings</Link>
                 <button className="item" role="menuitem" onClick={() => logout()}><Icon name="logout" size={18} /> Log out</button>
               </div>
             )}
@@ -203,7 +205,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             © {new Date().getFullYear()} Citizen Digital Ltd (Reg. 99073) — applicant for a Central Bank of Lesotho banking licence. It does not hold a
             licence or carry on banking business; this is a pre-licensing demonstration of the proposed Citizen Bank.
           </span>
-          <nav><Link href="/settings">Security</Link><Link href="/settings#help">Help</Link></nav>
+          <nav><Link href="/profile#settings">Security</Link><Link href="/profile#help">Help</Link></nav>
         </footer>
       </div>
       {mobileOpen && <div className="modal-bg" style={{ zIndex: 19, background: "rgba(3,1,12,.5)" }} onClick={() => setMobileOpen(false)} />}

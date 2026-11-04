@@ -1,4 +1,5 @@
 "use client";
+import {EnergizeAccount} from '@/components/EnergizeAccount';
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,7 +11,7 @@ import { useBank } from "@/lib/bank";
 import { fmtDateTime, fmtDay, localEquiv, money } from "@/lib/format";
 import type { Entry } from "@/lib/types";
 
-const TYPE_LABEL: Record<string, string> = { CURRENT: "Transactional", SAVINGS: "Savings", FIXED_DEPOSIT: "Fixed deposit" };
+const TYPE_LABEL: Record<string, string> = { CURRENT: "Transactional", SAVINGS: "Savings", FIXED_DEPOSIT: "Fixed deposit", CRYPTO:"Crypto sandbox" };
 
 function Accounts() {
   const { data } = useBank();
@@ -43,7 +44,7 @@ function Accounts() {
     <>
       <PageHead title="My Accounts" sub={`Total balance ${money(total)}${eq ? ` · ≈ ${eq}` : ""} across ${data.accounts.length} accounts`}
         actions={<Link className="btn secondary small" href="/transfers?tab=own"><Icon name="transfer" size={16} /> Move money</Link>} />
-      <div className="split" style={{ gridTemplateColumns: "minmax(0,0.8fr) minmax(0,1.4fr)" }}>
+      <EnergizeAccount/><div className="split" style={{ gridTemplateColumns: "minmax(0,0.8fr) minmax(0,1.4fr)" }}>
         <div>
           {data.accounts.map((a) => (
             <div key={a.id} className={`row clickable${a.id === acc.id ? " selected" : ""}`} onClick={() => router.replace(`/accounts?id=${a.id}`)}

@@ -14,7 +14,7 @@ export default function AuthHero() {
       </ul>
       <p className="legal-banner">
         Citizen Digital Ltd (Reg. 99073) is the applicant for a Central Bank of Lesotho banking licence and does not currently carry on banking
-        business. This is a pre-licensing demonstration of the proposed Citizen Bank.
+        business. Your profile can be created now; banking accounts remain dormant until the required approvals.
       </p>
     </section>
   );
